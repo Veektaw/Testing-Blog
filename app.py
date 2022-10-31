@@ -49,7 +49,7 @@ class Blogpost(UserMixin, db.Model):
 def home():
     return render_template('home.html')
 
-@app.route("/blog/create")
+@app.route("/blogs")
 def create_blog():
     return render_template('blog.html')
 
