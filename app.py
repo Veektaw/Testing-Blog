@@ -18,9 +18,10 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
+# Why are these in app and in models.py?
 class User(UserMixin, db.Model):
     __tablename__ = "User"
-    
+
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     fullname = db.Column(db.String(150), nullable=False)
     gender = db.Column(db.String(100), nullable=False)
@@ -48,7 +49,7 @@ class Blogpost(UserMixin, db.Model):
 def home():
     return render_template('home.html')
 
-@app.route("/create_blog")
+@app.route("/blog/create")
 def create_blog():
     return render_template('blog.html')
 
