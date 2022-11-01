@@ -1,9 +1,7 @@
-from crypt import methods
-from curses import flash
-from flask import Flask, redirect, request, render_template, url_for
+from flask import Flask, redirect, request, render_template, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
-from app import db, app
-from models import Blogpost, User
+from blog import app
+from blog.models import Blogpost, User, db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, LoginManager, UserMixin
 
@@ -12,8 +10,8 @@ from flask_login import login_user, logout_user, login_required, LoginManager, U
 ###### If none has been posted, i will use jinja syntax to tell user to log in so they can post #######
 @app.route("/")
 def home():
-    posts = Blogpost.query.order_by(Blogpost.posted_on.desc()).all()
-    return render_template('home.html', posts=posts)
+    blogs = Blogpost.query.order_by(Blogpost.posted_on.desc()).all()
+    return render_template('home.html', blogs=blogs)
 
 
 ##### This is to create a new post ######
@@ -46,29 +44,39 @@ def create_post():
 
 #### This is supposed to bring out posts when they are CLICKED on ######
 def get_posts():
-    posts = Blogpost.query.order_by(Blogpost.posted_on.desc()).all()
-    return posts
+    blogs = Blogpost.query.order_by(Blogpost.posted_on.desc()).all()
+    return blogs
 
 ##### This is supposed to edit(UPDATE) an already posted blog ####
 @app.route("/edit_blog/<int:id/")
 def edit_blog(id):
-    blog = Blogpost.query.filter_by(id=id).first()
-    blog.complete = not blog.complete
+    blog = Blogpost.query.get_or_404(id)
 
-    db.session.delete(blog)
-    db.session.commit()
-    return redirect(url_for('home'))
+    if request.method == 'POST':
+        blog.content = request.form['content']
+
+        try:
+            db.session.commit()
+            return redirect('/')
+        except:
+            return 'There was an issue updating your task'
+
+    else:
+        return render_template('edit_blog.html', blog=blog)
 
 
 #### This is to delete a blog ####
 @app.route("/delete/<int:id/")
-def edit_blog(id):
-    blog = Blogpost.query.filter_by(id=id).first()
-    blog.complete = not blog.complete
+def delete_blog(id):
+    blog_to_delete = Blogpost.query.get_or_404(id)
 
-    db.session.commit()
-    return redirect(url_for('home'))
+    try:
+        db.session.delete(blog_to_delete)
+        db.session.commit()
+        return redirect('/')
 
+    except:
+        return "There was a problem deleting this blog"
 
 ### This is to sign up ####
 @app.route("/signup", methods=['GET', 'POST'])
@@ -142,6 +150,3 @@ def contact():
 @app.route("/about")
 def about():
     return render_template('about.html')
-
-if __name__ == '__main__':
-    app.run(debug=True)

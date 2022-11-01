@@ -1,12 +1,10 @@
+from blog import db
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from app import db
-import os
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, login_required, LoginManager, UserMixin
 import uuid
+from flask_login import login_user, logout_user, login_required, LoginManager, UserMixin
 
 
 class User(UserMixin, db.Model):
